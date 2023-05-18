@@ -24,7 +24,6 @@ Server::Server(const std::string_view host, const std::string_view port)
         throw std::runtime_error{gai_strerror(static_cast<int>(error))};
     }
 
-    bool bound = false;
     for (const auto& address : addresses) {
         m_sockfd =
             socket(address.family(), address.sockType(), address.protocol());
@@ -50,11 +49,10 @@ Server::Server(const std::string_view host, const std::string_view port)
             continue;
         }
 
-        bound = true;
         break;
     }
 
-    if (!bound) {
+    if (m_sockfd == -1) {
         throw std::runtime_error{"Can't bind socket"};
     }
 

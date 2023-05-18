@@ -28,7 +28,7 @@ private:
     std::string_view m_host;
     std::string_view m_port;
 
-    FileDescriptor m_sockfd;
+    FileDescriptor m_sockfd{-1};
 
     int bind(const AddressInfo& address);
     int listen(int backlog);
