@@ -1,5 +1,6 @@
-#include <iostream>
+#include "server/server.hpp"
 
 int main() {
-    std::cout << "hi\n";
+    Server server{"", "8080"};
+    server.run();
 }

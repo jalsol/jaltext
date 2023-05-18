@@ -2,24 +2,46 @@
 #define TYPES_ADDR_INFO_HPP
 
 #include <sys/types.h>
-#include <cstddef>
-#include <string>
 
-#include "sockaddr.hpp"
-#include "addr_info_enums.hpp"
+#include <cstddef>
+#include <string_view>
+#include <vector>
+
+#include "types/aliases.hpp"
+#include "types/sockaddr.hpp"
 
 class AddressInfo {
 public:
+    AddressInfo() = default;
+    AddressInfo(const AddressInfo&) = default;
+    AddressInfo(const addrinfo&);
+
+    AddressInfo& setFlag(AIFlag flag);
+    AddressInfo& setFamily(AIFamily family);
+    AddressInfo& setSocket(AISockType sock_type);
+
+    const addrinfo& data() const;
+    AIFlag flag() const;
+    AIFamily family() const;
+    AISockType sockType() const;
+    AIProtocol protocol() const;
+    sockaddr* address() const;
+
+    socklen_t& addressLen();
+    socklen_t addressLen() const;
+    // const BaseSocketAddress& address() const;
+    // std::string_view canonName() const;
 
 private:
-    AIFlag m_flag;
-    AIFamily m_family;
-    AISockType m_socket;
-    AIProtocol m_protocol;
+    addrinfo m_data{};
+    // AIFlag m_flag;
+    // AIFamily m_family;
+    // AISockType m_sock_type;
+    // AIProtocol m_protocol;
 
-    std::size_t m_length;
-    BaseSocketAddress m_address;
-    std::string m_canon_name;
+    // socklen_t m_address_len{};
+    // BaseSocketAddress m_address;
+    // std::string_view m_canon_name;
 };
 
-#endif // TYPES_ADDR_INFO_HPP
+#endif  // TYPES_ADDR_INFO_HPP

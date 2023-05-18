@@ -1,31 +1,20 @@
 #ifndef TYPES_SOCKADDR_HPP
 #define TYPES_SOCKADDR_HPP
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <memory>
 
-#include "addr_info_enums.hpp"
+#include "aliases.hpp"
 
-class BaseSocketAddress {
-protected:
-    AIFamily m_family;
-    std::uint16_t m_port;
-};
-
-class SocketAddressIPv4 : public BaseSocketAddress {
+class SocketAddress {
 public:
+    AIFamily family();
+    sockaddr_storage& data();
+    const sockaddr_storage& data() const;
 
 private:
-    std::uint32_t m_address;
+    sockaddr_storage m_data{};
 };
 
-class SocketAddressIPv6 : public BaseSocketAddress {
-public:
-
-private:
-    std::array<std::uint8_t, 16> m_address;
-    std::uint32_t m_flow_info;
-    std::uint32_t m_scope_id;
-};
-
-#endif // TYPES_SOCKADDR_HPP
+#endif  // TYPES_SOCKADDR_HPP
