@@ -101,30 +101,36 @@ void TCPServer::run() {
                   << std::endl;
 
         if (jalsock::fork() == 0) {
-            jalsock::close(m_sockfd);
-            send(clientfd, "Hello!", 0);
-
             while (true) {
+                if (m_clients.empty()) {
+                    break;
+                }
+
+                std::cerr << "size = " << m_clients.size() << std::endl;
+
                 static char buffer[1024];
                 ::recv(clientfd, buffer, sizeof(buffer), 0);
 
                 if (strcmp(buffer, ":exit") == 0) {
-                    std::cout << "Disconnected from "
+                    send(clientfd, "Goodbye!", 0);
+
+                    std::cerr << "Disconnected from "
                               << jalsock::networkToPresentation(client_address)
                               << std::endl;
+
+                    jalsock::close(clientfd);
                     break;
                 } else {
+                    std::cerr << jalsock::networkToPresentation(client_address)
+                              << ": " << buffer << std::endl;
+
                     for (const auto& client : m_clients) {
-                        if (client != clientfd) {
-                            send(client, buffer, 0);
-                        }
+                        send(client, buffer, 0);
                     }
                     bzero(buffer, sizeof(buffer));
                 }
             }
         }
-
-        jalsock::close(clientfd);
     }
 }
 
@@ -147,7 +153,6 @@ std::pair<FileDesc, SockAddr> TCPServer::accept(FileDesc sockfd) {
         std::cerr << "Can't accept connection: " << std::strerror(errno)
                   << std::endl;
     } else {
-        send(clientfd, "Accepted!", 0);
         m_on_connect(clientfd, client_address);
     }
 

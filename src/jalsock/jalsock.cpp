@@ -1,7 +1,11 @@
 #include "jalsock.hpp"
 
 #include <arpa/inet.h>
+#include <sys/socket.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <string>
 
 namespace jalsock {
 
@@ -17,6 +21,10 @@ int bind(FileDesc fd, const AddrInfo& address) {
     return ::bind(fd, address.address(), address.addressLen());
 }
 
+int connect(FileDesc fd, const AddrInfo& address) {
+    return ::connect(fd, address.address(), address.addressLen());
+}
+
 int listen(FileDesc fd, int backlog) { return ::listen(fd, backlog); }
 
 int accept(FileDesc fd, SockAddr& address) {
@@ -30,6 +38,12 @@ int fork() { return ::fork(); }
 
 int send(FileDesc fd, const std::string_view view, int flags) {
     return ::send(fd, view.data(), view.size(), flags);
+}
+
+std::pair<int, std::string> recv(FileDesc fd, int flags) {
+    static char buffer[1024];
+    int len = ::recv(fd, buffer, sizeof(buffer), flags);
+    return {len, std::string(buffer, std::max(len, 0))};
 }
 
 FileDesc socket(AIFamily domain, AISockType type, AIProtocol protocol) {

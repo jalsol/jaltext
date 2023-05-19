@@ -13,6 +13,8 @@ namespace jalsock {
 
 int bind(FileDesc fd, const AddrInfo& address);
 
+int connect(FileDesc fd, const AddrInfo& address);
+
 int listen(FileDesc fd, int backlog);
 
 int accept(FileDesc fd, SockAddr& addr);
@@ -22,6 +24,8 @@ int close(FileDesc fd);
 int fork();
 
 int send(FileDesc fd, const std::string_view view, int flags);
+
+std::pair<int, std::string> recv(FileDesc fd, int flags);
 
 FileDesc socket(AIFamily domain, AISockType type, AIProtocol protocol);
 
