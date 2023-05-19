@@ -13,6 +13,7 @@ TCPClient::TCPClient(const std::string_view host, const std::string_view port)
 
 TCPClient::~TCPClient() {
     if (m_sockfd != -1) {
+        jalsock::send(m_sockfd, "/quit", 0);
         close();
     }
 }
@@ -91,7 +92,7 @@ void TCPClient::run() {
 
         std::cerr << response << std::endl;
 
-        if (response == "Goodbye!") {
+        if (response == "/quit") {
             break;
         }
     }

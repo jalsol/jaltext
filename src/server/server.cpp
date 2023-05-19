@@ -106,13 +106,16 @@ void TCPServer::run() {
                     break;
                 }
 
-                std::cerr << "size = " << m_clients.size() << std::endl;
+                const auto& [len, response] = jalsock::recv(clientfd, 0);
 
-                static char buffer[1024];
-                ::recv(clientfd, buffer, sizeof(buffer), 0);
+                if (len == -1) {
+                    std::cerr << "Can't receive data: " << std::strerror(errno)
+                              << std::endl;
+                    continue;
+                }
 
-                if (strcmp(buffer, ":exit") == 0) {
-                    send(clientfd, "Goodbye!", 0);
+                if (response == "/quit") {
+                    send(clientfd, "/quit", 0);
 
                     std::cerr << "Disconnected from "
                               << jalsock::networkToPresentation(client_address)
@@ -122,12 +125,11 @@ void TCPServer::run() {
                     break;
                 } else {
                     std::cerr << jalsock::networkToPresentation(client_address)
-                              << ": " << buffer << std::endl;
+                              << ": " << response << std::endl;
 
                     for (const auto& client : m_clients) {
-                        send(client, buffer, 0);
+                        send(client, response, 0);
                     }
-                    bzero(buffer, sizeof(buffer));
                 }
             }
         }
