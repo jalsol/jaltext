@@ -141,9 +141,18 @@ void TCPServer::handleRequest(FileDesc client_fd) {
         jalsock::close(client_fd);
         m_fd_set.clear(client_fd);
     } else {
-        std::cerr << "Socket " << client_fd << ", message: " << message << std::endl;
+        std::cerr << "Socket " << client_fd << ", message: " << message
+                  << std::endl;
+
+        if (message == "/quit") {
+            jalsock::close(client_fd);
+            m_fd_set.clear(client_fd);
+            return;
+        }
+
         for (int other_fd = 0; other_fd <= m_fd_set.maxFD(); ++other_fd) {
-            if (m_fd_set.isSet(other_fd) && other_fd != m_listener && other_fd != client_fd) {
+            if (m_fd_set.isSet(other_fd) && other_fd != m_listener &&
+                other_fd != client_fd) {
                 send(other_fd, message, 0);
             }
         }

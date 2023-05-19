@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include "types/aliases.hpp"
+#include "types/fd_set.hpp"
 
 class TCPClient {
 public:
@@ -24,7 +25,8 @@ private:
     std::string_view m_host;
     std::string_view m_port;
 
-    FileDesc m_sockfd{-1};
+    FileDesc m_server_fd{-1};
+    FileDescSet m_fd_set{};
 
     void init();
     void close();
