@@ -34,4 +34,6 @@ int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
 
 void* getInAddr(const SockAddr& address);
 
+std::string_view networkToPresentation(const SockAddr& address);
+
 }  // namespace jalsock

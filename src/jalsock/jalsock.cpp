@@ -1,5 +1,6 @@
 #include "jalsock.hpp"
 
+#include <arpa/inet.h>
 #include <unistd.h>
 
 namespace jalsock {
@@ -58,6 +59,13 @@ std::pair<ErrAI, std::vector<AddrInfo>> getAddressInfo(
 int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
                socklen_t optlen) {
     return ::setsockopt(fd, level, static_cast<int>(optname), optval, optlen);
+}
+
+std::string_view networkToPresentation(const SockAddr& address) {
+    static char ipstr[INET6_ADDRSTRLEN];
+    inet_ntop(static_cast<int>(address.family()), getInAddr(address), ipstr,
+              sizeof(ipstr));
+    return ipstr;
 }
 
 }  // namespace jalsock

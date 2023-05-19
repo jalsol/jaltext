@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-#include <arpa/inet.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -89,37 +88,70 @@ void TCPServer::run() {
               << std::endl;
 
     while (true) {
-        SockAddr client_address;
-        FileDesc clientfd = jalsock::accept(m_sockfd, client_address);
-
-        std::cerr << "Accepting connection..." << std::endl;
+        const auto& [clientfd, client_address] = accept(m_sockfd);
 
         if (clientfd == -1) {
-            std::cerr << "Can't accept connection: " << std::strerror(errno)
-                      << std::endl;
             continue;
         }
 
-        char ip[INET6_ADDRSTRLEN];
-        inet_ntop(static_cast<int>(client_address.family()),
-                  jalsock::getInAddr(client_address), ip, INET6_ADDRSTRLEN);
+        m_clients.push_back(clientfd);
 
-        std::cerr << "Connection from " << ip << std::endl;
+        std::cerr << "Connection from "
+                  << jalsock::networkToPresentation(client_address)
+                  << std::endl;
 
         if (jalsock::fork() == 0) {
             jalsock::close(m_sockfd);
+            send(clientfd, "Hello!", 0);
 
-            if (jalsock::send(clientfd, "Hello, world!", 0) == -1) {
-                std::cerr << "Can't send data: " << std::strerror(errno)
-                          << std::endl;
-                jalsock::close(clientfd);
-                throw std::runtime_error{"Can't send data"};
+            while (true) {
+                static char buffer[1024];
+                ::recv(clientfd, buffer, sizeof(buffer), 0);
+
+                if (strcmp(buffer, ":exit") == 0) {
+                    std::cout << "Disconnected from "
+                              << jalsock::networkToPresentation(client_address)
+                              << std::endl;
+                    break;
+                } else {
+                    for (const auto& client : m_clients) {
+                        if (client != clientfd) {
+                            send(client, buffer, 0);
+                        }
+                    }
+                    bzero(buffer, sizeof(buffer));
+                }
             }
-
-            jalsock::close(clientfd);
-            break;
         }
+
+        jalsock::close(clientfd);
     }
+}
+
+void TCPServer::send(FileDesc clientfd, const std::string_view data,
+                     int flags) {
+    if (jalsock::send(clientfd, data, flags) == -1) {
+        std::cerr << "Can't send data: " << std::strerror(errno) << std::endl;
+        jalsock::close(clientfd);
+        throw std::runtime_error{"Can't send data"};
+    }
+}
+
+std::pair<FileDesc, SockAddr> TCPServer::accept(FileDesc sockfd) {
+    SockAddr client_address;
+    FileDesc clientfd = jalsock::accept(sockfd, client_address);
+
+    std::cerr << "Accepting connection..." << std::endl;
+
+    if (clientfd == -1) {
+        std::cerr << "Can't accept connection: " << std::strerror(errno)
+                  << std::endl;
+    } else {
+        send(clientfd, "Accepted!", 0);
+        m_on_connect(clientfd, client_address);
+    }
+
+    return {clientfd, client_address};
 }
 
 TCPServer& TCPServer::setHost(const std::string_view host) {
@@ -129,5 +161,11 @@ TCPServer& TCPServer::setHost(const std::string_view host) {
 
 TCPServer& TCPServer::setPort(const std::string_view port) {
     m_port = port;
+    return *this;
+}
+
+TCPServer& TCPServer::onConnect(
+    const std::function<void(FileDesc, const SockAddr&)>& on_connect) {
+    m_on_connect = on_connect;
     return *this;
 }
