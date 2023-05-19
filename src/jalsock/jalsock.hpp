@@ -32,6 +32,6 @@ std::pair<ErrAI, std::vector<AddrInfo>> getAddressInfo(
 int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
                socklen_t optlen);
 
-void* getInAddr(const struct sockaddr* sa);
+void* getInAddr(const SockAddr& address);
 
 }  // namespace jalsock

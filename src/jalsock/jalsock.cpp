@@ -4,12 +4,12 @@
 
 namespace jalsock {
 
-void* getInAddr(const struct sockaddr* sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
+void* getInAddr(const SockAddr& address) {
+    if (address.family() == AIFamily::IPv4) {
+        return &(((sockaddr_in*)&address.data())->sin_addr);
+    } else {
+        return &(((sockaddr_in6*)&address.data())->sin6_addr);
     }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 int bind(FileDesc fd, const AddrInfo& address) {

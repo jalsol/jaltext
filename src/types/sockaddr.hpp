@@ -5,7 +5,7 @@
 #include "types/aliases.hpp"
 class SockAddr {
 public:
-    AIFamily family();
+    AIFamily family() const;
     sockaddr_storage& data();
     const sockaddr_storage& data() const;
 

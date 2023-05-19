@@ -4,7 +4,9 @@
 
 #include "types/aliases.hpp"
 
-AIFamily SockAddr::family() { return static_cast<AIFamily>(m_data.ss_family); }
+AIFamily SockAddr::family() const {
+    return static_cast<AIFamily>(m_data.ss_family);
+}
 
 sockaddr_storage& SockAddr::data() { return m_data; }
 

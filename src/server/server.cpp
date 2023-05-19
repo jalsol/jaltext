@@ -102,9 +102,7 @@ void TCPServer::run() {
 
         char ip[INET6_ADDRSTRLEN];
         inet_ntop(static_cast<int>(client_address.family()),
-                  jalsock::getInAddr(
-                      reinterpret_cast<sockaddr*>(&client_address.data())),
-                  ip, INET6_ADDRSTRLEN);
+                  jalsock::getInAddr(client_address), ip, INET6_ADDRSTRLEN);
 
         std::cerr << "Connection from " << ip << std::endl;
 
