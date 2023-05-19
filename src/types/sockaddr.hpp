@@ -1,5 +1,4 @@
-#ifndef TYPES_SOCKADDR_HPP
-#define TYPES_SOCKADDR_HPP
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -7,7 +6,7 @@
 
 #include "aliases.hpp"
 
-class SocketAddress {
+class SockAddr {
 public:
     AIFamily family();
     sockaddr_storage& data();
@@ -16,5 +15,3 @@ public:
 private:
     sockaddr_storage m_data{};
 };
-
-#endif  // TYPES_SOCKADDR_HPP

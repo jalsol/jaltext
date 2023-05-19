@@ -4,43 +4,41 @@
 
 #include "aliases.hpp"
 
-AddressInfo::AddressInfo(const addrinfo& data) : m_data{data} {}
+AddrInfo::AddrInfo(const addrinfo& data) : m_data{data} {}
 
-AddressInfo& AddressInfo::setFlag(AIFlag flag) {
+AddrInfo& AddrInfo::setFlag(AIFlag flag) {
     m_data.ai_flags = static_cast<int>(flag);
     return *this;
 }
 
-AddressInfo& AddressInfo::setFamily(AIFamily family) {
+AddrInfo& AddrInfo::setFamily(AIFamily family) {
     m_data.ai_family = static_cast<int>(family);
     return *this;
 }
 
-AddressInfo& AddressInfo::setSocket(AISockType sock_type) {
+AddrInfo& AddrInfo::setSocket(AISockType sock_type) {
     m_data.ai_socktype = static_cast<int>(sock_type);
     return *this;
 }
 
-const addrinfo& AddressInfo::data() const { return m_data; }
+const addrinfo& AddrInfo::data() const { return m_data; }
 
-AIFlag AddressInfo::flag() const {
-    return static_cast<AIFlag>(m_data.ai_flags);
-}
+AIFlag AddrInfo::flag() const { return static_cast<AIFlag>(m_data.ai_flags); }
 
-AIFamily AddressInfo::family() const {
+AIFamily AddrInfo::family() const {
     return static_cast<AIFamily>(m_data.ai_family);
 }
 
-AISockType AddressInfo::sockType() const {
+AISockType AddrInfo::sockType() const {
     return static_cast<AISockType>(m_data.ai_socktype);
 }
 
-AIProtocol AddressInfo::protocol() const {
+AIProtocol AddrInfo::protocol() const {
     return static_cast<AIProtocol>(m_data.ai_protocol);
 }
 
-socklen_t& AddressInfo::addressLen() { return m_data.ai_addrlen; }
+socklen_t& AddrInfo::addressLen() { return m_data.ai_addrlen; }
 
-socklen_t AddressInfo::addressLen() const { return m_data.ai_addrlen; }
+socklen_t AddrInfo::addressLen() const { return m_data.ai_addrlen; }
 
-sockaddr* AddressInfo::address() const { return m_data.ai_addr; }
+sockaddr* AddrInfo::address() const { return m_data.ai_addr; }

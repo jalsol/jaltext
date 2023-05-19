@@ -1,5 +1,4 @@
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#pragma once
 
 #include <string_view>
 #include <utility>
@@ -28,24 +27,7 @@ private:
     std::string_view m_host;
     std::string_view m_port;
 
-    FileDescriptor m_sockfd{-1};
+    FileDesc m_sockfd{-1};
 
-    int bind(const AddressInfo& address);
-    int listen(int backlog);
-    int accept(SocketAddress& address);
-    int close();
-    int fork();
-    int send(FileDescriptor sockfd, const std::string_view view, int flags);
-
-    FileDescriptor socket(AIFamily domain, AISockType type,
-                          AIProtocol protocol);
-
-    std::pair<ErrorAI, std::vector<AddressInfo>> getAddressInfo(
-        const std::string_view node, const std::string_view service,
-        const AddressInfo& hints);
-
-    int setsockopt(FileDescriptor sockfd, int level, SocketOption optname,
-                   const void* optval, socklen_t optlen);
+    void init();
 };
-
-#endif  // SERVER_HPP

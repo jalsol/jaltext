@@ -1,5 +1,4 @@
-#ifndef TYPES_ALIASES_HPP
-#define TYPES_ALIASES_HPP
+#pragma once
 
 #include <netdb.h>
 
@@ -34,25 +33,23 @@ enum class AIProtocol {
     Unspec = IPPROTO_IP,
 };
 
-enum class ErrorAI {
+enum class ErrAI {
     Success = 0,
-    AddressFamily = EAI_ADDRFAMILY,
+    AddrFamily = EAI_ADDRFAMILY,
     Again = EAI_AGAIN,
     BadFlags = EAI_BADFLAGS,
     Fail = EAI_FAIL,
     Family = EAI_FAMILY,
     Memory = EAI_MEMORY,
     NoData = EAI_NODATA,
-    Noname = EAI_NONAME,
+    NoName = EAI_NONAME,
     Service = EAI_SERVICE,
-    Socktype = EAI_SOCKTYPE,
+    SockType = EAI_SOCKTYPE,
     System = EAI_SYSTEM,
 };
 
-enum class SocketOption {
+enum class SockOpt {
     ReuseAddr = SO_REUSEADDR,
 };
 
-using FileDescriptor = int;
-
-#endif  // TYPES_ALIASES_HPP
+using FileDesc = int;
