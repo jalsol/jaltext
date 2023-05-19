@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 #include <signal.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 
 #include <cstring>
@@ -81,14 +82,6 @@ void TCPServer::init() {
     }
 }
 
-void* get_in_addr(const struct sockaddr* sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
 void TCPServer::run() {
     init();
 
@@ -108,10 +101,10 @@ void TCPServer::run() {
         }
 
         char ip[INET6_ADDRSTRLEN];
-        inet_ntop(
-            static_cast<int>(client_address.family()),
-            get_in_addr(reinterpret_cast<sockaddr*>(&client_address.data())),
-            ip, INET6_ADDRSTRLEN);
+        inet_ntop(static_cast<int>(client_address.family()),
+                  jalsock::getInAddr(
+                      reinterpret_cast<sockaddr*>(&client_address.data())),
+                  ip, INET6_ADDRSTRLEN);
 
         std::cerr << "Connection from " << ip << std::endl;
 

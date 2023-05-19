@@ -1,8 +1,9 @@
 #include "addr_info.hpp"
 
+#include <netdb.h>
 #include <sys/socket.h>
 
-#include "aliases.hpp"
+#include "types/aliases.hpp"
 
 AddrInfo::AddrInfo(const addrinfo& data) : m_data{data} {}
 

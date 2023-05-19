@@ -2,8 +2,6 @@
 
 #include <netdb.h>
 
-#include <vector>
-
 enum class AIFlag {
     None = 0,
     Passive = AI_PASSIVE,

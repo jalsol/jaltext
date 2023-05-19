@@ -1,6 +1,8 @@
 #include "sockaddr.hpp"
 
-#include <types/aliases.hpp>
+#include <sys/socket.h>
+
+#include "types/aliases.hpp"
 
 AIFamily SockAddr::family() { return static_cast<AIFamily>(m_data.ss_family); }
 

@@ -1,6 +1,16 @@
 #include "jalsock.hpp"
 
+#include <unistd.h>
+
 namespace jalsock {
+
+void* getInAddr(const struct sockaddr* sa) {
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
 
 int bind(FileDesc fd, const AddrInfo& address) {
     return ::bind(fd, address.address(), address.addressLen());

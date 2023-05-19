@@ -1,11 +1,8 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
-#include <memory>
+#include <sys/socket.h>
 
-#include "aliases.hpp"
-
+#include "types/aliases.hpp"
 class SockAddr {
 public:
     AIFamily family();

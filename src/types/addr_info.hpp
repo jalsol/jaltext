@@ -1,10 +1,7 @@
 #pragma once
 
-#include <sys/types.h>
-
-#include <cstddef>
-#include <string_view>
-#include <vector>
+#include <netdb.h>
+#include <sys/socket.h>
 
 #include "types/aliases.hpp"
 #include "types/sockaddr.hpp"

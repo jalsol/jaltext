@@ -1,5 +1,8 @@
 #pragma once
 
+#include <sys/socket.h>
+
+#include <string_view>
 #include <vector>
 
 #include "types/addr_info.hpp"
@@ -28,5 +31,7 @@ std::pair<ErrAI, std::vector<AddrInfo>> getAddressInfo(
 
 int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
                socklen_t optlen);
+
+void* getInAddr(const struct sockaddr* sa);
 
 }  // namespace jalsock
