@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sys/select.h>
 #include <sys/socket.h>
 
 #include <string_view>
@@ -7,6 +8,7 @@
 
 #include "types/addr_info.hpp"
 #include "types/aliases.hpp"
+#include "types/fd_set.hpp"
 #include "types/sockaddr.hpp"
 
 namespace jalsock {
@@ -39,5 +41,8 @@ int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
 void* getInAddr(const SockAddr& address);
 
 std::string_view networkToPresentation(const SockAddr& address);
+
+int select(int nfds, FileDescSet& readfds, FileDescSet& writefds,
+           FileDescSet& exceptfds, timeval* timeout);
 
 }  // namespace jalsock

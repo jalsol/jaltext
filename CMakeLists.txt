@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}_server
     src/types/aliases.hpp
     src/types/addr_info.hpp src/types/addr_info.cpp
     src/types/sockaddr.hpp src/types/sockaddr.cpp
+    src/types/fd_set.hpp src/types/fd_set.cpp
 )
 
 add_executable(${PROJECT_NAME}_client
@@ -31,4 +32,5 @@ add_executable(${PROJECT_NAME}_client
     src/types/aliases.hpp
     src/types/addr_info.hpp src/types/addr_info.cpp
     src/types/sockaddr.hpp src/types/sockaddr.cpp
+    src/types/fd_set.hpp src/types/fd_set.cpp
 )

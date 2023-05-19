@@ -82,4 +82,10 @@ std::string_view networkToPresentation(const SockAddr& address) {
     return ipstr;
 }
 
+int select(int nfds, FileDescSet& readfds, FileDescSet& writefds,
+           FileDescSet& exceptfds, timeval* timeout) {
+    return ::select(nfds, &readfds.data(), &writefds.data(), &exceptfds.data(),
+                    timeout);
+}
+
 }  // namespace jalsock

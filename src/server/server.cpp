@@ -29,25 +29,25 @@ void TCPServer::init() {
     }
 
     for (const auto& address : addresses) {
-        m_sockfd = jalsock::socket(address.family(), address.sockType(),
-                                   address.protocol());
+        m_listener = jalsock::socket(address.family(), address.sockType(),
+                                     address.protocol());
 
-        if (m_sockfd == -1) {
+        if (m_listener == -1) {
             std::cerr << "Can't create socket: " << std::strerror(errno)
                       << std::endl;
             continue;
         }
 
         int yes = 1;
-        if (jalsock::setSockOpt(m_sockfd, SOL_SOCKET, SockOpt::ReuseAddr, &yes,
-                                sizeof(yes)) == -1) {
+        if (jalsock::setSockOpt(m_listener, SOL_SOCKET, SockOpt::ReuseAddr,
+                                &yes, sizeof(yes)) == -1) {
             std::cerr << "Can't set socket options: " << std::strerror(errno)
                       << std::endl;
             continue;
         }
 
-        if (jalsock::bind(m_sockfd, address) == -1) {
-            jalsock::close(m_sockfd);
+        if (jalsock::bind(m_listener, address) == -1) {
+            jalsock::close(m_listener);
             std::cerr << "Can't bind socket: " << std::strerror(errno)
                       << std::endl;
             continue;
@@ -56,29 +56,31 @@ void TCPServer::init() {
         break;
     }
 
-    if (m_sockfd == -1) {
+    if (m_listener == -1) {
         throw std::runtime_error{"Can't bind socket"};
     }
 
-    if (jalsock::listen(m_sockfd, backlog) == -1) {
-        jalsock::close(m_sockfd);
+    if (jalsock::listen(m_listener, backlog) == -1) {
+        jalsock::close(m_listener);
         throw std::runtime_error{"Can't listen socket"};
     }
 
-    struct sigaction sa;
+    m_fd_set.set(m_listener);
 
-    sa.sa_handler = [](int s) {
-        int saved_errno = errno;
-        while (waitpid(-1, NULL, WNOHANG) > 0)
-            ;
-        errno = saved_errno;
-    };
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-        perror("sigaction");
-        throw std::runtime_error{"Can't set sigaction"};
-    }
+    // struct sigaction sa;
+
+    // sa.sa_handler = [](int s) {
+    //     int saved_errno = errno;
+    //     while (waitpid(-1, NULL, WNOHANG) > 0)
+    //         ;
+    //     errno = saved_errno;
+    // };
+    // sigemptyset(&sa.sa_mask);
+    // sa.sa_flags = SA_RESTART;
+    // if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+    //     perror("sigaction");
+    //     throw std::runtime_error{"Can't set sigaction"};
+    // }
 }
 
 void TCPServer::run() {
@@ -88,47 +90,54 @@ void TCPServer::run() {
               << std::endl;
 
     while (true) {
-        const auto& [clientfd, client_address] = accept(m_sockfd);
+        FileDescSet read_fds = m_fd_set;
+        FileDescSet _;
 
-        if (clientfd == -1) {
-            continue;
+        if (jalsock::select(m_fd_set.maxFD() + 1, read_fds, _, _, nullptr) ==
+            -1) {
+            std::cerr << "Can't select: " << std::strerror(errno) << std::endl;
+            throw std::runtime_error{"Can't select"};
         }
 
-        m_clients.push_back(clientfd);
+        for (int i = 0; i <= m_fd_set.maxFD(); ++i) {
+            if (!read_fds.isSet(i)) {
+                continue;
+            }
 
-        std::cerr << "Connection from "
-                  << jalsock::networkToPresentation(client_address)
-                  << std::endl;
+            if (i == m_listener) {
+                const auto& [clientfd, client_address] = accept(m_listener);
 
-        if (jalsock::fork() == 0) {
-            while (true) {
-                if (m_clients.empty()) {
-                    break;
-                }
-
-                const auto& [len, response] = jalsock::recv(clientfd, 0);
-
-                if (len == -1) {
-                    std::cerr << "Can't receive data: " << std::strerror(errno)
-                              << std::endl;
+                if (clientfd == -1) {
                     continue;
                 }
 
-                if (response == "/quit") {
-                    send(clientfd, "/quit", 0);
+                m_fd_set.set(clientfd);
 
-                    std::cerr << "Disconnected from "
-                              << jalsock::networkToPresentation(client_address)
-                              << std::endl;
+                std::cerr << "Connection from "
+                          << jalsock::networkToPresentation(client_address)
+                          << " (socket " << clientfd << ")" << std::endl;
+            } else {
+                const auto& [len, message] = jalsock::recv(i, 0);
 
-                    jalsock::close(clientfd);
-                    break;
+                if (len <= 0) {
+                    if (len == 0) {
+                        std::cerr << "Disconnected from socket " << i
+                                  << std::endl;
+                    } else {
+                        std::cerr
+                            << "Can't receive data: " << std::strerror(errno)
+                            << std::endl;
+                    }
+
+                    jalsock::close(i);
+                    m_fd_set.clear(i);
                 } else {
-                    std::cerr << jalsock::networkToPresentation(client_address)
-                              << ": " << response << std::endl;
-
-                    for (const auto& client : m_clients) {
-                        send(client, response, 0);
+                    std::cerr << "Socket " << i << ", message: " << message
+                              << std::endl;
+                    for (int j = 0; j <= m_fd_set.maxFD(); ++j) {
+                        if (m_fd_set.isSet(j) && j != m_listener && j != i) {
+                            send(j, message, 0);
+                        }
                     }
                 }
             }
@@ -154,8 +163,6 @@ std::pair<FileDesc, SockAddr> TCPServer::accept(FileDesc sockfd) {
     if (clientfd == -1) {
         std::cerr << "Can't accept connection: " << std::strerror(errno)
                   << std::endl;
-    } else {
-        m_on_connect(clientfd, client_address);
     }
 
     return {clientfd, client_address};
@@ -168,11 +175,5 @@ TCPServer& TCPServer::setHost(const std::string_view host) {
 
 TCPServer& TCPServer::setPort(const std::string_view port) {
     m_port = port;
-    return *this;
-}
-
-TCPServer& TCPServer::onConnect(
-    const std::function<void(FileDesc, const SockAddr&)>& on_connect) {
-    m_on_connect = on_connect;
     return *this;
 }

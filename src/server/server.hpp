@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
 #include <string_view>
 #include <utility>
 
 #include "types/aliases.hpp"
+#include "types/fd_set.hpp"
 #include "types/sockaddr.hpp"
 
 class TCPServer {
@@ -22,8 +22,6 @@ public:
     TCPServer& setPort(const std::string_view port);
 
     void run();
-    TCPServer& onConnect(
-        const std::function<void(FileDesc, const SockAddr&)>& on_connect);
 
 private:
     static constexpr int backlog = 10;
@@ -31,12 +29,8 @@ private:
     std::string_view m_host;
     std::string_view m_port;
 
-    FileDesc m_sockfd{-1};
-
-    std::vector<FileDesc> m_clients{};
-
-    std::function<void(FileDesc, const SockAddr&)> m_on_connect{
-        [](FileDesc, const SockAddr&) {}};
+    FileDesc m_listener{-1};
+    FileDescSet m_fd_set{};
 
     void init();
 
