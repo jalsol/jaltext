@@ -8,17 +8,17 @@
 #include "types/addr_info.hpp"
 #include "types/aliases.hpp"
 
-class Server {
+class TCPServer {
 public:
-    Server(const std::string_view host, const std::string_view port);
+    TCPServer(const std::string_view host, const std::string_view port);
 
-    Server(const Server&) = delete;
-    Server(Server&&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server& operator=(Server&&) = delete;
+    TCPServer(const TCPServer&) = delete;
+    TCPServer(TCPServer&&) = delete;
+    TCPServer& operator=(const TCPServer&) = delete;
+    TCPServer& operator=(TCPServer&&) = delete;
 
-    Server& setHost(const std::string_view host);
-    Server& setPort(const std::string_view port);
+    TCPServer& setHost(const std::string_view host);
+    TCPServer& setPort(const std::string_view port);
 
     void run();
 

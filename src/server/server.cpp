@@ -9,7 +9,7 @@
 
 #include "types/addr_info.hpp"
 
-Server::Server(const std::string_view host, const std::string_view port)
+TCPServer::TCPServer(const std::string_view host, const std::string_view port)
     : m_host{host}, m_port{port} {
     AddressInfo hints;
     hints.setFlag(AIFlag::Passive)
@@ -85,7 +85,7 @@ void* get_in_addr(const struct sockaddr* sa) {
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void Server::run() {
+void TCPServer::run() {
     std::cerr << "Server is running on " << m_host << ":" << m_port
               << std::endl;
 
@@ -123,23 +123,23 @@ void Server::run() {
     }
 }
 
-Server& Server::setHost(const std::string_view host) {
+TCPServer& TCPServer::setHost(const std::string_view host) {
     m_host = host;
     return *this;
 }
 
-Server& Server::setPort(const std::string_view port) {
+TCPServer& TCPServer::setPort(const std::string_view port) {
     m_port = port;
     return *this;
 }
 
-FileDescriptor Server::socket(AIFamily domain, AISockType type,
+FileDescriptor TCPServer::socket(AIFamily domain, AISockType type,
                               AIProtocol protocol) {
     return ::socket(static_cast<int>(domain), static_cast<int>(type),
                     static_cast<int>(protocol));
 }
 
-std::pair<ErrorAI, std::vector<AddressInfo>> Server::getAddressInfo(
+std::pair<ErrorAI, std::vector<AddressInfo>> TCPServer::getAddressInfo(
     const std::string_view node, const std::string_view service,
     const AddressInfo& hints) {
     addrinfo* result;
@@ -158,29 +158,29 @@ std::pair<ErrorAI, std::vector<AddressInfo>> Server::getAddressInfo(
     return {error, addresses};
 }
 
-int Server::setsockopt(FileDescriptor sockfd, int level, SocketOption optname,
+int TCPServer::setsockopt(FileDescriptor sockfd, int level, SocketOption optname,
                        const void* optval, socklen_t optlen) {
     return ::setsockopt(sockfd, level, static_cast<int>(optname), optval,
                         optlen);
 }
 
-int Server::bind(const AddressInfo& address) {
+int TCPServer::bind(const AddressInfo& address) {
     return ::bind(m_sockfd, address.address(), address.addressLen());
 }
 
-int Server::close() { return ::close(m_sockfd); }
+int TCPServer::close() { return ::close(m_sockfd); }
 
-int Server::listen(int backlog) { return ::listen(m_sockfd, backlog); }
+int TCPServer::listen(int backlog) { return ::listen(m_sockfd, backlog); }
 
-int Server::accept(SocketAddress& address) {
+int TCPServer::accept(SocketAddress& address) {
     socklen_t size = sizeof(address.data());
     return ::accept(m_sockfd, reinterpret_cast<sockaddr*>(&address.data()),
                     &size);
 }
 
-int Server::fork() { return ::fork(); }
+int TCPServer::fork() { return ::fork(); }
 
-int Server::send(FileDescriptor sockfd, const std::string_view view,
+int TCPServer::send(FileDescriptor sockfd, const std::string_view view,
                  int flags) {
     return ::send(sockfd, view.data(), view.size(), flags);
 }
