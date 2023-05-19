@@ -105,41 +105,46 @@ void TCPServer::run() {
             }
 
             if (i == m_listener) {
-                const auto& [clientfd, client_address] = accept(m_listener);
-
-                if (clientfd == -1) {
-                    continue;
-                }
-
-                m_fd_set.set(clientfd);
-
-                std::cerr << "Connection from "
-                          << jalsock::networkToPresentation(client_address)
-                          << " (socket " << clientfd << ")" << std::endl;
+                handleIncoming();
             } else {
-                const auto& [len, message] = jalsock::recv(i, 0);
+                handleRequest(i);
+            }
+        }
+    }
+}
 
-                if (len <= 0) {
-                    if (len == 0) {
-                        std::cerr << "Disconnected from socket " << i
-                                  << std::endl;
-                    } else {
-                        std::cerr
-                            << "Can't receive data: " << std::strerror(errno)
-                            << std::endl;
-                    }
+void TCPServer::handleIncoming() {
+    const auto& [client_fd, client_address] = accept(m_listener);
 
-                    jalsock::close(i);
-                    m_fd_set.clear(i);
-                } else {
-                    std::cerr << "Socket " << i << ", message: " << message
-                              << std::endl;
-                    for (int j = 0; j <= m_fd_set.maxFD(); ++j) {
-                        if (m_fd_set.isSet(j) && j != m_listener && j != i) {
-                            send(j, message, 0);
-                        }
-                    }
-                }
+    if (client_fd == -1) {
+        return;
+    }
+
+    m_fd_set.set(client_fd);
+
+    std::cerr << "Connection from "
+              << jalsock::networkToPresentation(client_address) << " (socket "
+              << client_fd << ")" << std::endl;
+}
+
+void TCPServer::handleRequest(FileDesc client_fd) {
+    const auto& [len, message] = jalsock::recv(client_fd, 0);
+
+    if (len <= 0) {
+        if (len == 0) {
+            std::cerr << "Disconnected from socket " << client_fd << std::endl;
+        } else {
+            std::cerr << "Can't receive data: " << std::strerror(errno)
+                      << std::endl;
+        }
+
+        jalsock::close(client_fd);
+        m_fd_set.clear(client_fd);
+    } else {
+        std::cerr << "Socket " << client_fd << ", message: " << message << std::endl;
+        for (int other_fd = 0; other_fd <= m_fd_set.maxFD(); ++other_fd) {
+            if (m_fd_set.isSet(other_fd) && other_fd != m_listener && other_fd != client_fd) {
+                send(other_fd, message, 0);
             }
         }
     }

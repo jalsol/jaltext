@@ -33,7 +33,9 @@ private:
     FileDescSet m_fd_set{};
 
     void init();
-
     void send(FileDesc fd, const std::string_view data, int flags);
     std::pair<FileDesc, SockAddr> accept(FileDesc sockfd);
+
+    void handleIncoming();
+    void handleRequest(FileDesc clientfd);
 };
