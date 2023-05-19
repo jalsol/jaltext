@@ -11,5 +11,13 @@ include_directories(src)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+
+    src/server/server.hpp src/server/server.cpp
+
+    src/jalsock/jalsock.hpp src/jalsock/jalsock.cpp
+
+    src/types/aliases.hpp
+    src/types/addr_info.hpp src/types/addr_info.cpp
+    src/types/sockaddr.hpp src/types/sockaddr.cpp
 )
 
