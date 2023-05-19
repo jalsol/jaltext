@@ -1,6 +1,11 @@
 #include "jalsock.hpp"
 
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <string>
 
 namespace jalsock {
 
@@ -16,6 +21,10 @@ int bind(FileDesc fd, const AddrInfo& address) {
     return ::bind(fd, address.address(), address.addressLen());
 }
 
+int connect(FileDesc fd, const AddrInfo& address) {
+    return ::connect(fd, address.address(), address.addressLen());
+}
+
 int listen(FileDesc fd, int backlog) { return ::listen(fd, backlog); }
 
 int accept(FileDesc fd, SockAddr& address) {
@@ -29,6 +38,12 @@ int fork() { return ::fork(); }
 
 int send(FileDesc fd, const std::string_view view, int flags) {
     return ::send(fd, view.data(), view.size(), flags);
+}
+
+std::pair<int, std::string> recv(FileDesc fd, int flags) {
+    static char buffer[1024];
+    int len = ::recv(fd, buffer, sizeof(buffer), flags);
+    return {len, std::string(buffer, std::max(len, 0))};
 }
 
 FileDesc socket(AIFamily domain, AISockType type, AIProtocol protocol) {
@@ -58,6 +73,19 @@ std::pair<ErrAI, std::vector<AddrInfo>> getAddressInfo(
 int setSockOpt(FileDesc fd, int level, SockOpt optname, const void* optval,
                socklen_t optlen) {
     return ::setsockopt(fd, level, static_cast<int>(optname), optval, optlen);
+}
+
+std::string_view networkToPresentation(const SockAddr& address) {
+    static char ipstr[INET6_ADDRSTRLEN];
+    inet_ntop(static_cast<int>(address.family()), getInAddr(address), ipstr,
+              sizeof(ipstr));
+    return ipstr;
+}
+
+int select(int nfds, FileDescSet& readfds, FileDescSet& writefds,
+           FileDescSet& exceptfds, timeval* timeout) {
+    return ::select(nfds, &readfds.data(), &writefds.data(), &exceptfds.data(),
+                    timeout);
 }
 
 }  // namespace jalsock
