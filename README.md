@@ -11,6 +11,10 @@ It is portable to any POSIX-compliant system (e.g. Linux, macOS, BSD, etc.). The
 
 [Here is the demonstration on YouTube.](https://youtu.be/A4diOnhv23I)
 
+## Features
+- Multiple clients can send messages to each other
+- Non-blocking I/O
+
 ## Dependencies
 
 - C++20 (GNU GCC 12.1.0)
